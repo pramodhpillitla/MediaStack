@@ -43,3 +43,83 @@ export const uploadVideo = asyncHandler(async (req, res) => {
       .status(201)
       .json(new ApiResponse(201, video, "Video uploaded successfully"));
 });
+
+export const getVideoById = asyncHandler(async (req, res) => {
+   const { videoId } = req.params;
+
+   if (!videoId) {
+      throw new ApiError(400, "Video ID is required");
+   }
+
+   const video = await Video.findById(videoId).populate(
+      "owner",
+      "username fullName avatar"
+   );
+
+   if (!video) {
+      throw new ApiError(404, "Video not found");
+   }
+
+   // increment views
+   video.views += 1;
+   await video.save({ validateBeforeSave: false });
+
+   return res
+      .status(200)
+      .json(new ApiResponse(200, video, "Video fetched successfully"));
+});
+
+export const getAllVideos = asyncHandler(async (req, res) => {
+   const page = parseInt(req.query.page) || 1;
+   const limit = parseInt(req.query.limit) || 10;
+
+   const skip = (page - 1) * limit;
+
+   const videos = await Video.find({ isPublished: true })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("owner", "username fullName avatar");
+
+   const totalVideos = await Video.countDocuments({ isPublished: true });
+
+   return res.status(200).json(
+      new ApiResponse(200, {
+         videos,
+         currentPage: page,
+         totalPages: Math.ceil(totalVideos / limit),
+         totalVideos
+      }, "Videos fetched successfully")
+   );
+});
+
+export const getVideosByUser = asyncHandler(async (req, res) => {
+   const { userId } = req.params;
+
+   const page = parseInt(req.query.page) || 1;
+   const limit = parseInt(req.query.limit) || 10;
+
+   const skip = (page - 1) * limit;
+
+   const videos = await Video.find({
+      owner: userId,
+      isPublished: true
+   })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+   const totalVideos = await Video.countDocuments({
+      owner: userId,
+      isPublished: true
+   });
+
+   return res.status(200).json(
+      new ApiResponse(200, {
+         videos,
+         currentPage: page,
+         totalPages: Math.ceil(totalVideos / limit),
+         totalVideos
+      }, "User videos fetched successfully")
+   );
+});

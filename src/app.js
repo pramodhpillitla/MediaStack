@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import videoRouter from "./routes/video.routes.js";
+
 const app = express();
 app.use(cors({
     origin: process.env.CORS_ORIGIN||"*",
@@ -17,6 +19,8 @@ import userRouter from "./routes/user.routes.js";
 
 app.use("/api/v1/users",userRouter);
 // so this basically creates a link something like http://localhost:8000/api/v1/users/registerUser ... cool isn't it?!
+
+app.use("/api/v1/videos", videoRouter);
 
 
 export {app};
