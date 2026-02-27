@@ -2,7 +2,7 @@ import mongoose,{Schema,model, plugin} from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const videoSchema =new Schema({
-    videoFile:{
+    videoURL:{
         type:String,
         required:true,
     },
@@ -12,7 +12,9 @@ const videoSchema =new Schema({
     },
     owner:{
         type: Schema.Types.ObjectId,
-        ref:"User"
+        ref:"User",
+        required:true,
+        index:true
     },
     title:{
         type:String,
@@ -33,6 +35,10 @@ const videoSchema =new Schema({
     isPublished:{
         type :Boolean,
         default:true,
+    },
+    likes:{
+        type:Number,
+        default:0
     }
 },{timestamps:true});
 
